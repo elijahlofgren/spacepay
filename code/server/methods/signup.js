@@ -38,5 +38,23 @@ Meteor.methods({
 			throw new Meteor.Error('customer-exists', 'Sorry, that customer email already exists!');
 		}
 
+	},
+	stripeCreateCustomer: function (token, email) {
+		// Note: we'd check() both of our arguments here, but I've stripped this out for the sake of brevity.
+
+		var stripeCustomer = new Future();
+
+		Stripe.customers.create({
+			source: token,
+			email: email
+		}, function (error, customer) {
+			if (error) {
+				stripeCustomer.return(error);
+			} else {
+				stripeCustomer.return(customer);
+			}
+		});
+
+		return stripeCustomer.wait();
 	}
 });
