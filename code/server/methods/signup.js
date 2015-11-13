@@ -4,7 +4,7 @@ var Future = Npm.require('fibers/future');
 Meteor.methods({
 	createTrialCustomer: function (customer) {
 		check(customer, {
-			name: String,
+			//name: String,
 			emailAddress: String,
 			password: String,
 			plan: String,
