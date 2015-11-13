@@ -34,3 +34,6 @@ reactive-var
 reactive-dict
 aldeed:collection2
 tracker
+mrgalaxy:stripe
+momentjs:moment
+random
