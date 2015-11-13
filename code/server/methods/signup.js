@@ -21,9 +21,12 @@ Meteor.methods({
 				if (error) {
 					console.log(error);
 				} else {
-					var customerId = stripeCustomer.id,
-						plan = customer.plan;
-
+					var customerId = stripeCustomer.id;
+					console.log("customerId = ");
+					console.log(customerId);
+						//plan = customer.plan;
+						// temporarily hard-code plan here
+					var	plan = "standard";
 					Meteor.call('stripeCreateSubscription', customerId, plan, function (error, response) {
 						if (error) {
 							console.log(error);
@@ -40,12 +43,10 @@ Meteor.methods({
 
 	},
 	stripeCreateCustomer: function (token, email) {
-
 		check(email, String);
 		check(token, String);
 
 		var Stripe = StripeAPI(Meteor.settings.private.stripe.testSecretKey);
-
 
 		var stripeCustomer = new Future();
 
@@ -61,5 +62,25 @@ Meteor.methods({
 		});
 
 		return stripeCustomer.wait();
+	},
+	stripeCreateSubscription: function (customer, plan) {
+		check(customer, String);
+		check(plan, String);
+
+		var Stripe = StripeAPI(Meteor.settings.private.stripe.testSecretKey);
+
+		var stripeSubscription = new Future();
+
+		Stripe.customers.createSubscription(customer, {
+			plan: plan
+		}, function (error, subscription) {
+			if (error) {
+				stripeSubscription.return(error);
+			} else {
+				stripeSubscription.return(subscription);
+			}
+		});
+
+		return stripeSubscription.wait();
 	}
 });
