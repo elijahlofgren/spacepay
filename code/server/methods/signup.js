@@ -11,6 +11,9 @@ Meteor.methods({
 			token: String
 		});
 
+		console.log("customer = ");
+		console.log(customer);
+
 		var emailRegex = new RegExp(customer.emailAddress, "i");
 		var lookupCustomer = Meteor.users.findOne({ "emails.address": emailRegex });
 
@@ -24,9 +27,7 @@ Meteor.methods({
 					var customerId = stripeCustomer.id;
 					console.log("customerId = ");
 					console.log(customerId);
-						//plan = customer.plan;
-						// temporarily hard-code plan here
-					var	plan = "standard";
+					var plan = customer.plan;
 					Meteor.call('stripeCreateSubscription', customerId, plan, function (error, response) {
 						if (error) {
 							console.log(error);
