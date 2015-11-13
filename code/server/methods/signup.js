@@ -40,7 +40,12 @@ Meteor.methods({
 
 	},
 	stripeCreateCustomer: function (token, email) {
-		// Note: we'd check() both of our arguments here, but I've stripped this out for the sake of brevity.
+
+		check(email, String);
+		check(token, String);
+
+		var Stripe = StripeAPI(Meteor.settings.private.stripe.testSecretKey);
+
 
 		var stripeCustomer = new Future();
 
