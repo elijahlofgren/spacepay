@@ -1,8 +1,0 @@
-{
-  "public": {
-    "key": "value"
-  },
-  "private": {
-    "MAIL_URL": ""
-  }
-}
