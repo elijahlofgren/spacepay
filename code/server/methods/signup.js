@@ -1,5 +1,48 @@
 var Future = Npm.require('fibers/future');
 
+var secret = Meteor.settings.private.stripe.testSecretKey;
+var Stripe = StripeAPI(secret);
+
+ function _createMeteorAccount(customerId, customer, stripeCustomer, stripeCreateSubscriptionResponse, newCustomer) {
+		try {
+			var user = Accounts.createUser({
+				email: customer.emailAddress,
+				password: customer.password,
+				profile: {
+					name: customer.name,
+				}
+			});
+
+			var subscription = {
+				customerId: customerId,
+				subscription: {
+					plan: {
+						name: customer.plan,
+						used: 0
+					},
+					payment: {
+						card: {
+							type: stripeCustomer.sources.data[0].brand,
+							lastFour: stripeCustomer.sources.data[0].last4
+						},
+						nextPaymentDue: stripeCreateSubscriptionResponse.current_period_end
+					}
+				}
+			}
+
+			Meteor.users.update(user, {
+				$set: subscription
+			}, function (error, response) {
+				if (error) {
+					console.log(error);
+				} else {
+					newCustomer.return(user);
+				}
+			});
+		} catch (exception) {
+			newCustomer.return(exception);
+		}
+	}
 
 Meteor.methods({
 	createTrialCustomer: function (customer) {
@@ -28,11 +71,20 @@ Meteor.methods({
 					console.log("customerId = ");
 					console.log(customerId);
 					var plan = customer.plan;
-					Meteor.call('stripeCreateSubscription', customerId, plan, function (error, response) {
+					Meteor.call('stripeCreateSubscription', customerId, plan, function (error, stripeCreateSubscriptionResponse) {
 						if (error) {
 							console.log(error);
 						} else {
-							// If all goes well with our subscription, we'll handle it here.
+							_createMeteorAccount(
+							customerId, customer, stripeCustomer, stripeCreateSubscriptionResponse, newCustomer, 
+							function (error, response) {
+								if (error) {
+									console.log(error);
+								} else {
+									// TBD: Is this callback called?
+									// creating meteor account successful	
+								}
+							});
 						}
 					});
 				}
@@ -46,9 +98,7 @@ Meteor.methods({
 	stripeCreateCustomer: function (token, email) {
 		check(email, String);
 		check(token, String);
-
-		var Stripe = StripeAPI(Meteor.settings.private.stripe.testSecretKey);
-
+		
 		var stripeCustomer = new Future();
 
 		Stripe.customers.create({
@@ -67,9 +117,7 @@ Meteor.methods({
 	stripeCreateSubscription: function (customer, plan) {
 		check(customer, String);
 		check(plan, String);
-
-		var Stripe = StripeAPI(Meteor.settings.private.stripe.testSecretKey);
-
+		
 		var stripeSubscription = new Future();
 
 		Stripe.customers.createSubscription(customer, {
