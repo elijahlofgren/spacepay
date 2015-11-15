@@ -26,3 +26,6 @@ accounts-password
 
 sanjo:jasmine
 velocity:console-reporter
+mrgalaxy:stripe
+momentjs:moment
+random
